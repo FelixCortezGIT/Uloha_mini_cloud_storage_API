@@ -17,7 +17,11 @@ def list_files():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    if 'file' not in request.files:
+        return f"ziadny subor", 400
     file = request.files['file']
+    if file.filename == '':
+        return f"nebol vybrany ziadny subor", 400
     filename = secure_filename(file.filename)
     file.save(os.path.join(STORAGE_DIR, filename))
     return jsonify({"message": "upload succesfull", "filename": filename}), 201
@@ -27,11 +31,13 @@ def download_file(filename):
     filename = secure_filename(filename)
     if not os.path.isfile(os.path.join(STORAGE_DIR, filename)):
         return f"subor {filename} v tomto priecinku neexistuje", 404
-    return send_from_directory(STORAGE_DIR, filename, as_attachment=True)
+    return send_from_directory(STORAGE_DIR, filename, as_attachment=True), 200
 
 @app.route('/files/<filename>', methods=['DELETE'])
 def delete_file(filename):
     filename = secure_filename(filename)
+    if not os.path.isfile(os.path.join(STORAGE_DIR, filename)):
+        return f"subor {filename} v priecnku neexistuje", 404
     os.remove(os.path.join(STORAGE_DIR, filename))
     return f"file {filename} deleted", 200
 
