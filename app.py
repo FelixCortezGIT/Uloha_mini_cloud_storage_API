@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory
 import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 STORAGE_DIR = 'cloud_storage'
@@ -17,12 +18,20 @@ def list_files():
 @app.route('/upload', methods=['POST'])
 def upload_file():
     file = request.files['file']
-    file.save(os.path.join(STORAGE_DIR, file.filename))
-    return jsonify({"message": "upload succesfull", "filename": file.filename}), 201
+    filename = secure_filename(file.filename)
+    file.save(os.path.join(STORAGE_DIR, filename))
+    return jsonify({"message": "upload succesfull", "filename": filename}), 201
 
 @app.route('/files/<filename>')
 def download_file(filename):
+    filename = secure_filename(filename)
     return send_from_directory(STORAGE_DIR, filename, as_attachment=True)
+
+@app.route('/files/<filename>', methods=['DELETE'])
+def delete_file(filename):
+    filename = secure_filename(filename)
+    os.remove(os.path.join(STORAGE_DIR, filename))
+    return f"file {filename} deleted", 200
 
 if __name__ == '__main__':
     app.run()
