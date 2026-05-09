@@ -25,6 +25,8 @@ def upload_file():
 @app.route('/files/<filename>')
 def download_file(filename):
     filename = secure_filename(filename)
+    if not os.path.isfile(os.path.join(STORAGE_DIR, filename)):
+        return f"subor {filename} v tomto priecinku neexistuje", 404
     return send_from_directory(STORAGE_DIR, filename, as_attachment=True)
 
 @app.route('/files/<filename>', methods=['DELETE'])
