@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import os
 
 app = Flask(__name__)
@@ -19,6 +19,10 @@ def upload_file():
     file = request.files['file']
     file.save(os.path.join(STORAGE_DIR, file.filename))
     return jsonify({"message": "upload succesfull", "filename": file.filename}), 201
+
+@app.route('/files/<filename>')
+def download_file(filename):
+    return send_from_directory(STORAGE_DIR, filename, as_attachment=True)
 
 if __name__ == '__main__':
     app.run()
